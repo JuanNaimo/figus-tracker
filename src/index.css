@@ -1,0 +1,11 @@
+/* MUI CssBaseline maneja el reset; acá solo lo mínimo. */
+html,
+body,
+#root {
+  height: 100%;
+}
+
+/* Respeta el notch del iPhone */
+body {
+  padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom) 0;
+}
