@@ -1,11 +1,17 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
+import basicSsl from '@vitejs/plugin-basic-ssl'
 
 // https://vitejs.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
+  // En modo "lan" (npm run dev:lan) servimos por HTTPS para que la cámara
+  // (getUserMedia) funcione al entrar desde el iPhone por la red local.
+  server: mode === 'lan' ? { host: true } : undefined,
   plugins: [
     react(),
+    // Certificado self-signed solo para el modo LAN.
+    ...(mode === 'lan' ? [basicSsl()] : []),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'icon-192.png', 'icon-512.png'],
@@ -30,4 +36,4 @@ export default defineConfig({
       },
     }),
   ],
-})
+}))

@@ -60,7 +60,7 @@ export default function DuplicatesList() {
 
       <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: 1 }}>
         {items.map((s) => (
-          <StickerCell key={s.id} sticker={s} count={countOf(collection, s.id)} spareBadge />
+          <StickerCell key={s.id} sticker={s} count={countOf(collection, s.id)} spareBadge showCode />
         ))}
       </Box>
 
@@ -74,7 +74,7 @@ function buildText(items: Sticker[], collection: Record<string, number>): string
   for (const s of items) {
     const extra = (collection[s.id] ?? 0) - 1
     const g = groupOf(s.team)
-    lines.push(`#${s.number} ${s.team}${g ? ` (Grupo ${g})` : ''}${s.label ? ` - ${s.label}` : ''} (x${extra})`)
+    lines.push(`${s.id} · ${s.team}${g ? ` (Grupo ${g})` : ''}${s.label ? ` - ${s.label}` : ''} (x${extra})`)
   }
   return lines.join('\n')
 }

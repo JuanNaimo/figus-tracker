@@ -14,13 +14,24 @@ import StyleOutlinedIcon from '@mui/icons-material/StyleOutlined'
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutlined'
 import RepeatOutlinedIcon from '@mui/icons-material/RepeatOutlined'
 import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined'
+import MilitaryTechOutlinedIcon from '@mui/icons-material/MilitaryTechOutlined'
 import { useCollection } from '../store/useCollection'
-import { CATALOG } from '../data/catalog2026'
+import { useMilestones } from '../store/useMilestones'
+import { CATALOG, TEAMS_IN_ORDER } from '../data/catalog2026'
+import { getStickerById } from '../lib/catalogLookup'
 import { GROUP_LETTERS, GROUPS, groupOf } from '../data/groups'
 import { computeOverall, computeByTeam, type TeamStats } from '../lib/stats'
 
+/** Formatea una fecha ISO a algo corto y legible, ej. "3 jun 2026". */
+function formatDate(iso: string): string {
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return ''
+  return d.toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' })
+}
+
 export default function Stats() {
   const collection = useCollection((s) => s.collection)
+  const milestones = useMilestones((s) => s.completions)
 
   const overall = useMemo(() => computeOverall(CATALOG, collection), [collection])
   const teams = useMemo(
@@ -34,6 +45,19 @@ export default function Stats() {
   const byMissing = useMemo(() => [...teams].sort((a, b) => b.missing - a.missing), [teams])
   const completed = useMemo(() => teams.filter((t) => t.total > 0 && t.percent === 100), [teams])
 
+  // Primer país completado: la entrada con fecha más antigua. Ante empate
+  // (varios registrados a la vez), desempata por el orden del álbum.
+  const firstCompleted = useMemo(() => {
+    const order = new Map(TEAMS_IN_ORDER.map((t, i) => [t, i]))
+    const entries = Object.entries(milestones).filter(([team]) => groupOf(team) !== null)
+    if (entries.length === 0) return null
+    entries.sort((a, b) => {
+      if (a[1] !== b[1]) return a[1] < b[1] ? -1 : 1
+      return (order.get(a[0]) ?? 0) - (order.get(b[0]) ?? 0)
+    })
+    return { team: entries[0][0], date: entries[0][1] }
+  }, [milestones])
+
   const groups = useMemo(() => {
     const byName = new Map(teams.map((t) => [t.team, t]))
     return GROUP_LETTERS.map((l) => {
@@ -46,17 +70,16 @@ export default function Stats() {
   const bestGroup = useMemo(() => [...groups].sort((a, b) => b.percent - a.percent)[0], [groups])
   const worstGroup = useMemo(() => [...groups].sort((a, b) => a.percent - b.percent)[0], [groups])
 
-  const catalogById = useMemo(() => new Map(CATALOG.map((s) => [s.id, s])), [])
   const mostDup = useMemo(() => {
     let best: { label: string; team: string; count: number } | null = null
     for (const [id, c] of Object.entries(collection)) {
       if (c > 1 && (!best || c > best.count)) {
-        const s = catalogById.get(id)
+        const s = getStickerById(id)
         if (s) best = { label: s.label ?? `#${s.number}`, team: s.team, count: c }
       }
     }
     return best
-  }, [collection, catalogById])
+  }, [collection])
 
   const avgPercent = useMemo(
     () => (teams.length ? Math.round(teams.reduce((a, t) => a + t.percent, 0) / teams.length) : 0),
@@ -99,9 +122,39 @@ export default function Stats() {
           color="success.main"
           label="Equipos completos"
           value={`${completed.length} / ${teams.length}`}
-          sub={completed.length ? completed.map((t) => t.team).join(', ') : 'Ninguno todavía'}
+          sub={completed.length ? `${completed.length} de ${teams.length} países al 100%` : 'Ninguno todavía'}
+        />
+        <Highlight
+          icon={<MilitaryTechOutlinedIcon />}
+          color="warning.main"
+          label="Primer país completado"
+          value={firstCompleted ? firstCompleted.team : '—'}
+          sub={firstCompleted ? formatDate(firstCompleted.date) : 'Todavía ninguno'}
         />
       </Box>
+
+      {/* Países completos */}
+      {completed.length > 0 && (
+        <Paper sx={{ p: 2.5 }}>
+          <Typography sx={{ fontWeight: 700, mb: 1.5 }}>
+            Países completos ({completed.length})
+          </Typography>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+            {completed.map((t) => {
+              const date = milestones[t.team]
+              return (
+                <Chip
+                  key={t.team}
+                  color="success"
+                  variant="outlined"
+                  icon={<CheckCircleOutlineIcon />}
+                  label={date ? `${t.team} · ${formatDate(date)}` : t.team}
+                />
+              )
+            })}
+          </Box>
+        </Paper>
+      )}
 
       {/* Repetidas + promedio */}
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' }, gap: 2 }}>

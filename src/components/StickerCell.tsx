@@ -4,15 +4,23 @@ import RemoveIcon from '@mui/icons-material/Remove'
 import type { Sticker } from '../types'
 import { useCollection } from '../store/useCollection'
 
+/** Inserta un separador entre el prefijo del país y el número: "ARG1" -> "ARG-1". */
+function formatCode(code: string): string {
+  return code.replace(/^([A-Za-z]+)(\d)/, '$1-$2')
+}
+
 export default function StickerCell({
   sticker,
   count,
   spareBadge = false,
+  showCode = false,
 }: {
   sticker: Sticker
   count: number
   /** Si es true, el badge muestra las repes que sobran (count-1) en vez del total. */
   spareBadge?: boolean
+  /** Si es true, muestra el código real de la figurita (ej. "ARG1") para intercambios. */
+  showCode?: boolean
 }) {
   const increment = useCollection((s) => s.increment)
   const decrement = useCollection((s) => s.decrement)
@@ -45,9 +53,25 @@ export default function StickerCell({
           gap: 0.5,
         }}
       >
-        <Typography variant="caption" color="text.secondary" sx={{ fontVariantNumeric: 'tabular-nums' }}>
-          #{sticker.number}
-        </Typography>
+        {showCode ? (
+          <Typography
+            variant="caption"
+            sx={{
+              fontWeight: 700,
+              fontFamily: 'monospace',
+              letterSpacing: 0.5,
+              px: 0.75,
+              borderRadius: 1,
+              bgcolor: 'action.selected',
+            }}
+          >
+            {formatCode(sticker.id)}
+          </Typography>
+        ) : (
+          <Typography variant="caption" color="text.secondary" sx={{ fontVariantNumeric: 'tabular-nums' }}>
+            #{sticker.number}
+          </Typography>
+        )}
         <Typography
           variant="body2"
           noWrap

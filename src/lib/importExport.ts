@@ -1,13 +1,26 @@
-import type { BackupFile, CollectionState, Sticker } from '../types'
+import type { BackupFile, CollectionState, PackEvent, Sticker } from '../types'
 
 const BACKUP_VERSION = 1
 
 // ---------- JSON ----------
 
-/** Serializa la colección a un backup JSON (string). */
-export function toJsonBackup(collection: CollectionState, now: string): string {
+/** Serializa la colección (y opcionalmente el historial de sobres) a un backup JSON. */
+export function toJsonBackup(collection: CollectionState, now: string, packs?: PackEvent[]): string {
   const file: BackupFile = { version: BACKUP_VERSION, exportedAt: now, collection }
+  if (packs && packs.length) file.packs = packs
   return JSON.stringify(file, null, 2)
+}
+
+/** Extrae el historial de sobres de un backup JSON (vacío si no tiene o es inválido). */
+export function parseBackupPacks(text: string): PackEvent[] {
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(text)
+  } catch {
+    return []
+  }
+  const packs = (parsed as Partial<BackupFile> | null)?.packs
+  return Array.isArray(packs) ? (packs as PackEvent[]) : []
 }
 
 /** Parsea un backup JSON y devuelve la colección. Lanza si es inválido. */

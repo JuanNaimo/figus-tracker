@@ -18,8 +18,16 @@ import DownloadIcon from '@mui/icons-material/Download'
 import UploadFileIcon from '@mui/icons-material/UploadFile'
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever'
 import { useCollection } from '../store/useCollection'
+import { usePacks } from '../store/usePacks'
 import { CATALOG } from '../data/catalog2026'
-import { toJsonBackup, parseJsonBackup, toCsv, parseCsv, downloadText } from '../lib/importExport'
+import {
+  toJsonBackup,
+  parseJsonBackup,
+  parseBackupPacks,
+  toCsv,
+  parseCsv,
+  downloadText,
+} from '../lib/importExport'
 
 type ImportMode = 'merge' | 'replace'
 
@@ -28,6 +36,8 @@ export default function ImportExportPanel() {
   const replaceAll = useCollection((s) => s.replaceAll)
   const mergeAll = useCollection((s) => s.mergeAll)
   const reset = useCollection((s) => s.reset)
+  const packs = usePacks((s) => s.packs)
+  const replacePacks = usePacks((s) => s.replaceAll)
 
   const fileRef = useRef<HTMLInputElement>(null)
   const [mode, setMode] = useState<ImportMode>('merge')
@@ -35,7 +45,11 @@ export default function ImportExportPanel() {
   const [confirmOpen, setConfirmOpen] = useState(false)
 
   function exportJson() {
-    downloadText('figus-backup.json', toJsonBackup(collection, new Date().toISOString()), 'application/json')
+    downloadText(
+      'figus-backup.json',
+      toJsonBackup(collection, new Date().toISOString(), packs),
+      'application/json',
+    )
   }
   function exportCsv() {
     downloadText('figus.csv', toCsv(CATALOG, collection), 'text/csv')
@@ -51,7 +65,20 @@ export default function ImportExportPanel() {
       const n = Object.keys(incoming).length
       if (mode === 'replace') replaceAll(incoming)
       else mergeAll(incoming)
-      setMsg({ ok: true, text: `Importadas ${n} figuritas (${mode === 'replace' ? 'reemplazo' : 'fusión'}).` })
+
+      // El historial de sobres solo viene en backups JSON; lo restauramos al reemplazar.
+      let packMsg = ''
+      if (!isCsv && mode === 'replace') {
+        const incomingPacks = parseBackupPacks(text)
+        if (incomingPacks.length) {
+          replacePacks(incomingPacks)
+          packMsg = ` y ${incomingPacks.length} registros de sobres`
+        }
+      }
+      setMsg({
+        ok: true,
+        text: `Importadas ${n} figuritas${packMsg} (${mode === 'replace' ? 'reemplazo' : 'fusión'}).`,
+      })
     } catch (err) {
       setMsg({ ok: false, text: err instanceof Error ? err.message : 'Error al importar.' })
     } finally {

@@ -12,8 +12,13 @@ import MenuIcon from '@mui/icons-material/Menu'
 import SportsSoccerIcon from '@mui/icons-material/SportsSoccer'
 import { useAuth } from './store/useAuth'
 import { useCollection } from './store/useCollection'
+import { usePacks } from './store/usePacks'
+import { useMilestones } from './store/useMilestones'
 import { isSupabaseConfigured } from './lib/supabase'
 import { LOCAL_MODE } from './lib/config'
+import { CATALOG } from './data/catalog2026'
+import { computeByTeam } from './lib/stats'
+import { groupOf } from './data/groups'
 import Auth from './components/Auth'
 import Sidebar, { type Tab } from './components/Sidebar'
 import Dashboard from './components/Dashboard'
@@ -21,6 +26,8 @@ import Stats from './components/Stats'
 import AlbumGrid from './components/AlbumGrid'
 import MissingList from './components/MissingList'
 import DuplicatesList from './components/DuplicatesList'
+import Packs from './components/Packs'
+import Scanner from './components/Scanner'
 import ImportExportPanel from './components/ImportExportPanel'
 import ConfigMissing from './components/ConfigMissing'
 
@@ -30,13 +37,36 @@ export default function App() {
   const { user, loading } = useAuth()
   const hydrate = useCollection((s) => s.hydrate)
   const clear = useCollection((s) => s.clear)
+  const hydratePacks = usePacks((s) => s.hydrate)
+  const clearPacks = usePacks((s) => s.clear)
+  const hydrateMilestones = useMilestones((s) => s.hydrate)
+  const clearMilestones = useMilestones((s) => s.clear)
+  const recordMilestones = useMilestones((s) => s.record)
+  const collection = useCollection((s) => s.collection)
   const [tab, setTab] = useState<Tab>('resumen')
   const [mobileOpen, setMobileOpen] = useState(false)
 
   useEffect(() => {
-    if (user) hydrate(user.id)
-    else clear()
-  }, [user, hydrate, clear])
+    if (user) {
+      hydrate(user.id)
+      hydratePacks(user.id)
+      hydrateMilestones(user.id)
+    } else {
+      clear()
+      clearPacks()
+      clearMilestones()
+    }
+  }, [user, hydrate, clear, hydratePacks, clearPacks, hydrateMilestones, clearMilestones])
+
+  // Registra la fecha en que cada país (selección nacional) se completa por
+  // primera vez, para poder mostrar "el primer país que completaste".
+  useEffect(() => {
+    if (!user) return
+    const completed = computeByTeam(CATALOG, collection)
+      .filter((t) => groupOf(t.team) !== null && t.total > 0 && t.percent === 100)
+      .map((t) => t.team)
+    if (completed.length) recordMilestones(completed)
+  }, [user, collection, recordMilestones])
 
   if (!isSupabaseConfigured && !LOCAL_MODE) return <ConfigMissing />
   if (loading)
@@ -119,6 +149,8 @@ export default function App() {
         {tab === 'album' && <AlbumGrid />}
         {tab === 'faltan' && <MissingList />}
         {tab === 'repes' && <DuplicatesList />}
+        {tab === 'sobres' && <Packs />}
+        {tab === 'escanear' && <Scanner />}
         {tab === 'datos' && <ImportExportPanel />}
       </Box>
     </Box>

@@ -13,6 +13,8 @@ import {
 import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined'
 import QueryStatsOutlinedIcon from '@mui/icons-material/QueryStatsOutlined'
 import StyleOutlinedIcon from '@mui/icons-material/StyleOutlined'
+import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined'
+import QrCodeScannerOutlinedIcon from '@mui/icons-material/QrCodeScannerOutlined'
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined'
 import RepeatOutlinedIcon from '@mui/icons-material/RepeatOutlined'
 import CloudSyncOutlinedIcon from '@mui/icons-material/CloudSyncOutlined'
@@ -22,7 +24,7 @@ import { useAuth } from '../store/useAuth'
 import { useCollection, type SyncStatus } from '../store/useCollection'
 import { LOCAL_MODE } from '../lib/config'
 
-export type Tab = 'resumen' | 'stats' | 'album' | 'faltan' | 'repes' | 'datos'
+export type Tab = 'resumen' | 'stats' | 'album' | 'faltan' | 'repes' | 'sobres' | 'escanear' | 'datos'
 
 export const NAV_ITEMS: { id: Tab; label: string; icon: React.ReactNode }[] = [
   { id: 'resumen', label: 'Resumen', icon: <DashboardOutlinedIcon /> },
@@ -30,6 +32,8 @@ export const NAV_ITEMS: { id: Tab; label: string; icon: React.ReactNode }[] = [
   { id: 'album', label: 'Álbum', icon: <StyleOutlinedIcon /> },
   { id: 'faltan', label: 'Faltan', icon: <SearchOutlinedIcon /> },
   { id: 'repes', label: 'Repetidas', icon: <RepeatOutlinedIcon /> },
+  { id: 'sobres', label: 'Sobres', icon: <Inventory2OutlinedIcon /> },
+  { id: 'escanear', label: 'Escanear', icon: <QrCodeScannerOutlinedIcon /> },
   { id: 'datos', label: 'Datos', icon: <CloudSyncOutlinedIcon /> },
 ]
 
