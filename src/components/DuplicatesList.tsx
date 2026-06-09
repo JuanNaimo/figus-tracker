@@ -58,7 +58,13 @@ export default function DuplicatesList() {
         Tocá − cuando entregues una repetida en un intercambio.
       </Typography>
 
-      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: 1 }}>
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: { xs: 'repeat(3, 1fr)', sm: 'repeat(auto-fill, minmax(120px, 1fr))' },
+          gap: 1,
+        }}
+      >
         {items.map((s) => (
           <StickerCell key={s.id} sticker={s} count={countOf(collection, s.id)} spareBadge showCode />
         ))}

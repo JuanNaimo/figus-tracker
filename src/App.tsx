@@ -30,6 +30,7 @@ import Packs from './components/Packs'
 import Scanner from './components/Scanner'
 import ImportExportPanel from './components/ImportExportPanel'
 import ConfigMissing from './components/ConfigMissing'
+import BottomNav from './components/BottomNav'
 
 const DRAWER_WIDTH = 260
 
@@ -140,6 +141,8 @@ export default function App() {
           flexGrow: 1,
           width: { md: `calc(100% - ${DRAWER_WIDTH}px)` },
           p: { xs: 2, md: 3 },
+          // Espacio para que la barra de navegación inferior (mobile) no tape el contenido.
+          pb: { xs: 'calc(72px + env(safe-area-inset-bottom))', md: 3 },
           maxWidth: 1100,
         }}
       >
@@ -153,6 +156,9 @@ export default function App() {
         {tab === 'escanear' && <Scanner />}
         {tab === 'datos' && <ImportExportPanel />}
       </Box>
+
+      {/* Navegación inferior estilo app, solo en mobile */}
+      <BottomNav tab={tab} onTab={handleTab} onMore={() => setMobileOpen(true)} />
     </Box>
   )
 }

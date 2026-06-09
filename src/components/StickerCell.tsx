@@ -81,22 +81,22 @@ export default function StickerCell({
           {sticker.label || sticker.team}
         </Typography>
 
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5, width: '100%' }}>
           <IconButton
             size="small"
             onClick={() => decrement(sticker.id)}
             disabled={count === 0}
             aria-label="Restar"
-            sx={{ bgcolor: 'action.selected' }}
+            sx={{ flex: 1, borderRadius: 1.5, bgcolor: 'action.selected' }}
           >
             <RemoveIcon fontSize="small" />
           </IconButton>
-          <Typography sx={{ width: 24, textAlign: 'center', fontWeight: 700 }}>{count}</Typography>
+          <Typography sx={{ minWidth: 20, textAlign: 'center', fontWeight: 700 }}>{count}</Typography>
           <IconButton
             size="small"
             onClick={() => increment(sticker.id)}
             aria-label="Sumar"
-            sx={{ bgcolor: 'primary.main', color: 'primary.contrastText', '&:hover': { bgcolor: 'primary.dark' } }}
+            sx={{ flex: 1, borderRadius: 1.5, bgcolor: 'primary.main', color: 'primary.contrastText', '&:hover': { bgcolor: 'primary.dark' } }}
           >
             <AddIcon fontSize="small" />
           </IconButton>

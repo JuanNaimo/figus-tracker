@@ -41,7 +41,8 @@ const STICKERS_BY_TEAM: Record<string, Sticker[]> = (() => {
 
 const GRID_SX = {
   display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
+  // En el teléfono fijamos 3 columnas; en pantallas más grandes se autollenan.
+  gridTemplateColumns: { xs: 'repeat(3, 1fr)', sm: 'repeat(auto-fill, minmax(120px, 1fr))' },
   gap: 1,
 } as const
 
